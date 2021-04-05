@@ -1,14 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cmn-Hans">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
   <title>soImgPreload</title>
+  <style>
+      * {
+          margin: 0;
+          padding: 0;
+      }
+
+      .img-container {
+          overflow: hidden;
+      }
+
+      .img-list {
+          float: left;
+          width: 230px;
+          height: 230px;
+          margin-left: 15px;
+          margin-bottom: 15px;
+          font-size: 50px;
+          font-weight: bold;
+          color: #000;
+          text-align: center;
+          line-height: 230px;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+      }
+
+      .progress-wrap {
+          --progress-hei: 20px;
+          position: fixed;
+          top: 0;
+          width: 100%;
+          height: var(--progress-hei);
+          line-height: var(--progress-hei);
+          text-align: center;
+          color: #fff;
+          background-color: sienna;
+      }
+
+      .progress-inner {
+          height: 100%;
+          width: 0;
+          background-color: green;
+          transition: all 0.5s;
+      }
+  </style>
 </head>
 <body>
+<div class="progress-wrap">
+  <div class="progress-inner img-load-progress"></div>
+</div>
+<div class="img-container">
+</div>
 <script src="./../dist/soImgPreload.js"></script>
 <script>
-  let loadImgArr = ['http://lorempixel.com/1600/900/?v=' + Date.now(), 'http://lorempixel.com/1600/901/?v=' + Date.now(), 'http://lorempixel.com/1600/902/?v=' + Date.now()]
+  let loadImgArr = []
+  const origin = 'http://lorempixel.com'
+  const origin1 = 'https://picsum.photos'
+  const imgTotal = 10
+
+  function createRadom() {
+    let max = 2000
+    let min = 400
+    return 500 + Math.floor(Math.random() * (max - min))
+  }
+
+  function createUUID() {
+    let now = Date.now()
+    let str = Math.random()
+    return `${now}_${str}`
+  }
+
+  function createImg(len) {
+    let hei = 900
+
+    for (let i = 0; i < len; i++) {
+      loadImgArr.push(`${origin1}/${createRadom()}/${createRadom()}/?v=${createUUID()}`)
+      hei += 1
+    }
+  }
+
+  const imgWrap = document.querySelector('.img-container')
+
+  createImg(imgTotal)
+
+  let imgListDom = ''
+  console.log('图片集合');
+  console.log(loadImgArr);
+  loadImgArr.forEach((p1, p2) => {
+    imgListDom += `<div class="img-list">${p2 + 1}</div>`
+  })
+  imgWrap.innerHTML = imgListDom
+  const imgListObj = imgWrap.querySelectorAll('.img-list')
+  const imgLoadProgress = document.querySelector('.img-load-progress')
   soImgPreload(loadImgArr, {
+    limit: 3, // 限制同时预加载图片的最大数量
     /**
      * 每有一张图片加载完成就会回调
      * @param {Object} item - 该图片的相关数据
@@ -26,6 +119,12 @@
       console.log('有一张图片加载完成')
       console.log(item)
       console.log(speed)
+      imgListObj[item.index].style.backgroundImage = `url('${item.url}')`
+      imgListObj[item.index].title = item.url
+      let proportion = (speed.success + speed.fail) / speed.total * 100
+      proportion = Math.floor(proportion)
+      imgLoadProgress.style.width = proportion + '%'
+      imgLoadProgress.textContent = proportion + '%'
     },
     /**
      * 所有图片加载完成触发
