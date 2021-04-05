@@ -1,7 +1,10 @@
 # soImgPreload
 soImgPreload是一个图片预加载库。原生javascript构建，兼容性良好，可用于浏览器环境的图片预加载。
-
-## Installing
+## 特点
+- 极小的。打包的文件只有2kb
+- 兼容性良好，使用原生js 构建，不用使用babel 即可大胆在项目中使用
+- 可限制同时预加载图片的数量，避免占用过多宽带
+## 安装
 Install with npm:
 
 ```
@@ -14,12 +17,13 @@ Include via [jsDelivr CDN](https://cdn.jsdelivr.net/npm/so-img-preload):
 <script src="https://cdn.jsdelivr.net/npm/so-img-preload"></script>
 ```
 
-## Usage
+## 使用
 ```javascript
 
   let loadImgArr = ['http://lorempixel.com/1600/900/?v=' + Date.now(), 'http://lorempixel.com/1600/901/?v=' + Date.now(), 'http://lorempixel.com/1600/902/?v=' + Date.now()]
 
   soImgPreload(loadImgArr, {
+    // limit: 2, // 限制同时预加载图片的数量。Number 类型
     /**
      * 每有一张图片加载完成就会回调
      * @param {Object} item - 该图片的相关数据
@@ -56,6 +60,10 @@ Include via [jsDelivr CDN](https://cdn.jsdelivr.net/npm/so-img-preload):
 ```
 
 ## Options
+#### **limit**
+*Default: None*
+
+限制同时预加载图片的数量。
 
 #### **each**
 *Default: None*
