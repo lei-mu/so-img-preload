@@ -1,6 +1,6 @@
 {
   "name": "so-img-preload",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "原生javascript构建的图片预加载库",
   "main": "dist/soImgPreload.js",
   "scripts": {
