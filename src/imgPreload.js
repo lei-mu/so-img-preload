@@ -4,6 +4,7 @@
  * @param {Object} opt - 配置项
  * @param {Function} opt.each - 每加载完成一张图片回调函数
  * @param {Function} opt.all - 所有图片加载完成回调函数
+ * @param {Undefined|Number} opt.limit - 同时加载的图片限制
  */
 export default function lcImgPreload(list = [], opt = {}) {
   const totalLen = list.length
@@ -11,7 +12,7 @@ export default function lcImgPreload(list = [], opt = {}) {
   let loadedLength = 0
   let successNum = 0
   let failNum = 0
-  let now = Date.now()
+  let now = null
 
   /**
    * 加载完成回调
@@ -20,7 +21,7 @@ export default function lcImgPreload(list = [], opt = {}) {
    * @param {Number} index - 当前图片下标
    * @param {Number} time - 当前图片的加载占时，单位ms
    */
-  function imgLoad(status, url, index, time) {
+  function imgLoadEnd(status, url, index, time) {
     loadedLength++
     status === 'success' ? successNum++ : failNum++
     let totalTime = Date.now() - now
@@ -42,14 +43,53 @@ export default function lcImgPreload(list = [], opt = {}) {
       opt.all(allData, speed)
     }
   }
-  list.forEach((p1, p2) => {
+
+  function imgLoad(url, index, cb) {
     let img = new Image()
-    img.src = p1
+    let s_img_now = Date.now()
+    img.src = url
     img.onload = function () {
-      imgLoad('success', p1, p2, Date.now() - now)
+      imgLoadEnd('success', url, index, Date.now() - s_img_now)
+      cb && cb()
     }
     img.onerror = function () {
-      imgLoad('fail', p1, p2, Date.now() - now)
+      imgLoadEnd('fail', url, index, Date.now() - s_img_now)
+      cb && cb()
     }
-  })
+  }
+
+  let nextLoadIndex = opt.limit
+
+  let taskList = []
+
+  function loadNext() {
+    if (nextLoadIndex > totalLen - 1) {
+      return
+    }
+    taskList[nextLoadIndex]()
+    nextLoadIndex += 1
+  }
+
+  if (typeof opt.limit === 'number' && opt.limit > 0) {
+
+    let createTask = (url, index) => {
+      return () => {
+        imgLoad(url, index, loadNext)
+      }
+    }
+
+
+    list.forEach((p1, p2) => {
+      taskList.push(createTask(p1, p2))
+    })
+    now = Date.now()
+    for (let i = 0; i < opt.limit; i++) {
+      taskList[i]()
+    }
+  } else {
+    now = Date.now()
+    list.forEach((p1, p2) => {
+      imgLoad(p1, p2)
+    })
+  }
 }
