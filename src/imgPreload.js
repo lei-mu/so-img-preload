@@ -8,11 +8,12 @@
  */
 export default function lcImgPreload(list = [], opt = {}) {
   const totalLen = list.length
+  if (totalLen === 0) return
   let allData = []
   let loadedLength = 0
   let successNum = 0
   let failNum = 0
-  let now = null
+  let totalNow = null
 
   /**
    * 加载完成回调
@@ -24,7 +25,7 @@ export default function lcImgPreload(list = [], opt = {}) {
   function imgLoadEnd(status, url, index, time) {
     loadedLength++
     status === 'success' ? successNum++ : failNum++
-    let totalTime = Date.now() - now
+    let totalTime = Date.now() - totalNow
     let obj = {
       status: status,
       index: index,
@@ -78,16 +79,15 @@ export default function lcImgPreload(list = [], opt = {}) {
       }
     }
 
-
     list.forEach((p1, p2) => {
       taskList.push(createTask(p1, p2))
     })
-    now = Date.now()
-    for (let i = 0; i < opt.limit; i++) {
+    totalNow = Date.now()
+    for (let i = 0, len = Math.min(opt.limit, totalLen); i < len; i++) {
       taskList[i]()
     }
   } else {
-    now = Date.now()
+    totalNow = Date.now()
     list.forEach((p1, p2) => {
       imgLoad(p1, p2)
     })
